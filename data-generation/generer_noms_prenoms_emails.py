@@ -14,10 +14,10 @@ def generer_csv(nb_lignes,  output_1_csv, output_2_csv):
 
     with open(output_1_csv, 'w', newline='') as init_data_csv, open(output_2_csv, 'w', newline='') as update_data_csv:
         writer1 = csv.writer(init_data_csv)
-        writer1.writerow(['Nom', 'Prénom', 'ExternalId', 'Email'])
+        writer1.writerow(['LastName', 'FirstName', 'ExternalId', 'Email'])
 
         writer2 = csv.writer(update_data_csv)
-        writer2.writerow(['ExternalId', 'AnonymzedEmail'])
+        writer2.writerow(['ExternalId', 'AnonymizedEmail'])
 
         for _ in range(nb_lignes):
             nom = fake.name()
