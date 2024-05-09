@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+
+  mongo-db:
+    image: mongo:latest
+#    container_name: mongo
+    ports:
+      - 27017:27017
+    networks:
+      - mongodb_network
+
+  mongo-seed:
+    image: mongo:latest # or another image that can run mongoimport
+    environment:
+      - MONGODB_HOST=mongo-db
+      - MONGODB_PORT=27017
+    volumes:
+      - ./data-generation/db-seed:/data
+    depends_on:
+      - mongo-db
+    command: [
+      "sh",
+      "-c",
+      "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type csv --file /data/noms_prenoms_emails.csv --headerline"
+    ]
+    # "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type json --file /data/auth-service~~user.json --jsonArray"
+    networks:
+      - mongodb_network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mexpress
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://mongo-db:27017/?authSource=admin
+      # - ME_CONFIG_BASICAUTH_USERNAME=admin
+      # - ME_CONFIG_BASICAUTH_PASSWORD=pass
+    links:
+      - mongo-db
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo-seed
+    networks:
+      - mongodb_network
+
+
+networks:
+  mongodb_network:
