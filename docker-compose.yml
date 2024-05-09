@@ -10,23 +10,23 @@ services:
     networks:
       - mongodb_network
 
-  mongo-seed:
-    image: mongo:latest # or another image that can run mongoimport
-    environment:
-      - MONGODB_HOST=mongo-db
-      - MONGODB_PORT=27017
-    volumes:
-      - ./data-generation/db-seed:/data
-    depends_on:
-      - mongo-db
-    command: [
-      "sh",
-      "-c",
-      "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type csv --file /data/noms_prenoms_emails.csv --headerline"
-    ]
-    # "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type json --file /data/auth-service~~user.json --jsonArray"
-    networks:
-      - mongodb_network
+#  mongo-seed:
+#    image: mongo:latest # or another image that can run mongoimport
+#    environment:
+#      - MONGODB_HOST=mongo-db
+#      - MONGODB_PORT=27017
+#    volumes:
+#      - ./data-generation/db-seed:/data
+#    depends_on:
+#      - mongo-db
+#    command: [
+#      "sh",
+#      "-c",
+#      "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type csv --file /data/noms_prenoms_emails.csv --headerline"
+#    ]
+#    # "mongoimport --host mongo-db --port 27017 --db sammlerio --mode upsert --type json --file /data/auth-service~~user.json --jsonArray"
+#    networks:
+#      - mongodb_network
 
   mongo-express:
     image: mongo-express:latest
@@ -38,9 +38,10 @@ services:
     links:
       - mongo-db
     ports:
-      - "8081:8081"
+      - "8082:8081"
     depends_on:
-      - mongo-seed
+      - mongo-db
+#      - mongo-seed
     networks:
       - mongodb_network
 

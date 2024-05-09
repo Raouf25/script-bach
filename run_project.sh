@@ -1,5 +1,7 @@
 #!/bin/bash
 
-# Run the data generator script then
+# Generate data file
 # Run docker-compose
-./data-generation/data_generator.sh 1000000 && docker-compose up
+./data-generation/data_generator.sh 100000
+
+docker-compose up
