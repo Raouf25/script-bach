@@ -3,7 +3,7 @@
 start_time=$(date +%s)
 
 # split File
-./split_file_data.sh  500  ./data-generation/db-seed/data_for_update.csv
+./split_file_data.sh  1000  ./data-generation/db-seed/data_for_update.csv
 
 
 # Vérifier si mongosh est installé, sinon l'installer
@@ -33,12 +33,14 @@ for fichier_csv in ./tmp/data_for_update_*; do
             echo "var bulkUpdateOps = [];" > $bulk_update_script
 
             # Lecture du fichier CSV et construction des opérations de mise à jour en masse
-            while IFS=',' read -r externalId email || [ -n "$externalId" ];
-            do
-                email=$(echo $email | awk '{gsub(/\r/,"")} {print}')
-                #mongosh "$MONGO_URI" --eval "db.noms_prenoms_emails.updateOne({ ExternalId: \"$externalId\" }, { \$set: { Email: \"$email\" } });"
-                echo "bulkUpdateOps.push({ updateOne: { filter: { 'ExternalId': '$externalId' }, update: { \$set: { 'Email': '$email' } } } });" >> $bulk_update_script
-            done < $fichier_csv
+#            while IFS=',' read -r externalId email || [ -n "$externalId" ];
+#            do
+#                email=$(echo $email | awk '{gsub(/\r/,"")} {print}')
+#                #mongosh "$MONGO_URI" --eval "db.noms_prenoms_emails.updateOne({ ExternalId: \"$externalId\" }, { \$set: { Email: \"$email\" } });"
+#                echo "bulkUpdateOps.push({ updateOne: { filter: { 'ExternalId': '$externalId' }, update: { \$set: { 'Email': '$email' } } } });" >> $bulk_update_script
+#            done < $fichier_csv
+            awk 'BEGIN {FS=","} {gsub(/\r/,""); print "bulkUpdateOps.push({ updateOne: { filter: { '\''ExternalId'\'': '\''" $1 "'\'' }, update: { \$set: { '\''Email'\'': '\''" $2 "'\'' } } } });"}' $fichier_csv >> $bulk_update_script
+
 
             # Exécution des mises à jour en masse
             echo "db.noms_prenoms_emails.bulkWrite(bulkUpdateOps);" >> $bulk_update_script
@@ -61,3 +63,5 @@ wait
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 echo "Durée d'exécution du script: $execution_time secondes."
+# pour 100_000 données, le temps d'exécution est de  629 secondes. (10 minutes et 29 secondes)
+# c'est à dire une ligne en 0,00629 secondes
