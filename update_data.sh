@@ -21,33 +21,33 @@ MONGO_URI="mongodb://localhost:27017/sammlerio"
 num_processes=0
 for fichier_csv in ./tmp/data_for_update_*; do
         (
-#            echo $fichier_csv
-
             # Construction du script pour les mises à jour en masse
             filename=$(basename $fichier_csv)
             # Extract the file number based on the last underscore
-            file_number=$(echo "$filename" | rev | cut -d'_' -f 1 | rev)
+            file_number=$(echo "$filename" | rev | cut -d'_' -f 1 | rev | sed 's/^0*//' | awk '{if ($0 == "") print "0"; else print $0}')
             bulk_update_script=./tmp/"bulk_update_$file_number.js"
 
             # Création du script de mise à jour en masse
             echo "var bulkUpdateOps = [];" > $bulk_update_script
-
-            # Lecture du fichier CSV et construction des opérations de mise à jour en masse
-#            while IFS=',' read -r externalId email || [ -n "$externalId" ];
-#            do
-#                email=$(echo $email | awk '{gsub(/\r/,"")} {print}')
-#                #mongosh "$MONGO_URI" --eval "db.noms_prenoms_emails.updateOne({ ExternalId: \"$externalId\" }, { \$set: { Email: \"$email\" } });"
-#                echo "bulkUpdateOps.push({ updateOne: { filter: { 'ExternalId': '$externalId' }, update: { \$set: { 'Email': '$email' } } } });" >> $bulk_update_script
-#            done < $fichier_csv
             awk 'BEGIN {FS=","} {gsub(/\r/,""); print "bulkUpdateOps.push({ updateOne: { filter: { '\''ExternalId'\'': '\''" $1 "'\'' }, update: { \$set: { '\''Email'\'': '\''" $2 "'\'' } } } });"}' $fichier_csv >> $bulk_update_script
-
-
-            # Exécution des mises à jour en masse
             echo "db.noms_prenoms_emails.bulkWrite(bulkUpdateOps);" >> $bulk_update_script
-            echo "print('La mise à jour de $bulk_update_script est terminée.');" >> $bulk_update_script
+#            echo "print('La mise à jour de $bulk_update_script est terminée.');" >> $bulk_update_script
+        ) &
+        num_processes=$((num_processes + 1))
 
+        # Limiter le nombre de processus simultanés au nombre de processeurs disponibles dans le système
+        if [ $num_processes -ge $(nproc --all) ]; then
+            wait && num_processes=0
+        fi
+done
+rm -rf ./tmp/data_for_update_*
+
+num_processes=0
+total=$(ls -l ./tmp/bulk_update_* | wc -l)
+for bulk_update_script_js in ./tmp/bulk_update_*; do
+        (
             # Exécution du script MongoDB
-            mongosh $MONGO_URI $bulk_update_script  && rm $bulk_update_script
+            mongosh $MONGO_URI $bulk_update_script_js && file_number=$(echo "$bulk_update_script_js" | sed 's/[^0-9]*//g') && ./progress_bar.sh "$total" "$file_number" "$total"  && rm $bulk_update_script_js
         ) &
         num_processes=$((num_processes + 1))
 
@@ -57,11 +57,14 @@ for fichier_csv in ./tmp/data_for_update_*; do
         fi
 done
 
-rm -rf ./tmp/data_for_update_*
 wait
+
+if [ -z "$(ls -A ./tmp)" ]; then
+    rm -rf ./tmp
+fi
 
 end_time=$(date +%s)
 execution_time=$((end_time - start_time))
-echo "Durée d'exécution du script: $execution_time secondes."
+echo -e "\nDurée d'exécution du script: $execution_time secondes."
 # pour 100_000 données, le temps d'exécution est de  629 secondes. (10 minutes et 29 secondes)
 # c'est à dire une ligne en 0,00629 secondes
