@@ -17,7 +17,7 @@ def generer_csv(nb_lignes,  output_1_csv, output_2_csv):
         writer1.writerow(['LastName', 'FirstName', 'ExternalId', 'Email'])
 
         writer2 = csv.writer(update_data_csv)
-        writer2.writerow(['ExternalId', 'AnonymizedEmail'])
+        # writer2.writerow(['ExternalId', 'AnonymizedEmail'])
 
         for _ in range(nb_lignes):
             nom = fake.name()

@@ -50,5 +50,3 @@ python3 $SCRIPT_DIR/generer_noms_prenoms_emails.py $nb_lignes
 
 echo "Fichier CSV créé: $fichier_csv  avec $nb_lignes lignes"
 
-mongoimport --host localhost --port 27017 --db sammlerio --mode upsert --type csv --file ./data-generation/db-seed/noms_prenoms_emails.csv --headerline
-echo "Ces données sont impotées au base de données"

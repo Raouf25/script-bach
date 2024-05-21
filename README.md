@@ -1,37 +1,44 @@
 # Script-Bach
+# Project Overview
 
-This project uses a combination of Python, Docker, and MongoDB to generate and import a large amount of data.
+This project is a robust data generation and management system that leverages the power of Python, Docker, and MongoDB. It is designed to generate a large amount of data, import it into a MongoDB database, and provide an interface for updating the data. The project is structured around two main scripts: `run_project.sh` and `update_data.sh`.
 
 ## Prerequisites
 
+Before you can run this project, you will need to have the following installed on your system:
+
 - Docker
 - Python 3
+- MongoDB
+- Bash
 
-## Steps to Run the Project
+## Running the Project
 
-### Step 1: Generate Data
+Running the project involves two main steps:
 
-Run the `data_generator.sh` script with the number of data rows you want to generate as an argument. For example, to generate 1,000,000 rows of data, you would run:
+### Step 1: Generate and Import Data
 
-```bash
-./data_generator.sh 1000000
-```
+The first step is to generate the data and import it into MongoDB. This is done using the `run_project.sh` script. This script checks if Docker is installed and running, starts the Docker services, generates the data file, and imports the data into MongoDB.
 
-This script uses Python and the Faker library to generate a CSV file with the specified number of rows. Each row contains a name, surname, and email.
-
-### Step 2: Import Data with Docker
-
-Once the data is generated, you can use Docker to import it into a MongoDB database. To do this, run:
+To run the script, navigate to the project directory in your terminal and execute the following command:
 
 ```bash
-docker-compose up
+./run_project.sh
 ```
 
-This command starts a MongoDB server and a `mongo-seed` service. The `mongo-seed` service runs the `mongoimport` command to import the generated data into the MongoDB database.
+### Step 2: Update Data
 
-## Notes
+The second step is to update the data in MongoDB. This is done using the `update_data.sh` script. This script checks if mongosh is installed, splits the input file into several smaller files, adds bulk update operations to each file, executes the generated MongoDB scripts, and cleans up the temporary files.
 
-The `docker-compose.yml` file in this project is configured to start the MongoDB server, run the `mongoimport` command, and then keep the MongoDB server running. This means that the data you imported will persist as long as the MongoDB server is running.
+To run the script, navigate to the project directory in your terminal and execute the following command:
+
+```bash
+./update_data.sh
+```
+
+## Conclusion
+
+This project provides a powerful and flexible system for generating, importing, and updating large amounts of data. Whether you're working with a small dataset for a personal project or managing a large database for a production application, this project provides the tools you need to handle your data efficiently and effectively.
 
 ## Contributing
 
